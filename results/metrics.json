@@ -1,0 +1,28 @@
+{
+  "development_episodes": 40,
+  "test_episodes": 20,
+  "test_gestures": 28,
+  "thresholds_predeclared": {
+    "enter": 0.2,
+    "exit": 0.3,
+    "dwell_seconds": 0.12,
+    "release_seconds": 0.1,
+    "cooldown_seconds": 0.3
+  },
+  "raw_edges": {
+    "true_commands": 28,
+    "false_or_duplicate_commands": 129,
+    "missed_gestures": 0,
+    "command_precision": 0.17834394904458598,
+    "gesture_recall": 1.0,
+    "mean_matched_activation_delay_seconds": 0.0023809523809523803
+  },
+  "filtered": {
+    "true_commands": 27,
+    "false_or_duplicate_commands": 0,
+    "missed_gestures": 1,
+    "command_precision": 1.0,
+    "gesture_recall": 0.9642857142857143,
+    "mean_matched_activation_delay_seconds": 0.288888888888889
+  }
+}
