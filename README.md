@@ -1,28 +1,18 @@
 # Gesture Command Filter
 
-**A single gesture should produce a single command, even when detections flicker.**
+A pinch that lasts across five missing frames should trigger one action. Treating a low-confidence observation as a release makes the same held pinch fire again when tracking returns. The [occlusion test](tests/test_contracts.py#L36) feeds that exact sequence to both detectors.
 
-I narrowed hand tracking to the boundary between a landmark stream and a UI action. A raw distance threshold emits repeated edges after brief occlusions and short noisy pinches. My framework is **normalize geometry → require sustained entry → latch one command → observe sustained release → re-arm**.
+The [filter](core.py) normalizes landmark geometry, waits 120 ms for entry, then latches the action until it observes a sustained release. Across 20 synthetic test episodes, the raw edge detector caught all 28 gestures and emitted another 129 false or duplicate commands. The filter caught 27, missed one and emitted no extra commands.
 
-The original state machine uses entry/release hysteresis, a dwell requirement and a cooldown. Low-confidence frames withhold evidence; they do not count as an observed release. [The experiment](results/report.md) compares command quality and activation delay against a raw edge detector on held-out synthetic episodes.
+That reduction in extra commands costs time. Matched gestures took **0.289 seconds on average** to activate with the filter, versus **0.002 seconds** with the raw threshold. The saved [episode decisions](results/decisions.json) and [thresholds and scores](results/metrics.json) allow both effects to be examined on the same generated streams. Camera and device latency are outside this experiment.
 
+## Replay the episodes
 
-## Recorded result
-
-On **20 held-out episodes / 28 gestures**, filtering matches **27** gestures with **0** false or duplicate commands. Raw edges match **28** with **129** false or duplicate commands. Filtering misses **1** gesture and has **0.289 seconds** mean matched activation delay. This retains the delay and missed-gesture cost.
-
-## Reproduce and inspect
-
-Python 3.11, CPU only. No API keys, paid services, provider calls, customer records or external data download.
+The generated landmark streams run with Python 3.11 on CPU.
 
 ```bash
-python -m venv .venv
-# Activate the environment for your shell.
-python -m pip install -r requirements.txt
 python -m unittest discover -s tests -v
 python run.py --output runs/local
 ```
 
-`core.py` contains the generator and actual comparison. `data/dataset.json` is the committed original input. `results/decisions.json` preserves the evaluated rows/traces. `results/metrics.json` and `results/report.md` state the measured outcomes. `results/manifest.json` binds core source, input, and output bytes with SHA-256. A fresh run writes to the requested directory and leaves committed results available for comparison.
-
-This is a new independent portfolio experiment. Its results do not establish historical employer/client outcomes, production adoption, or service scale. Read the [data card](docs/data-card.md) and [provenance](docs/provenance.md) before interpreting the numbers.
+[Data card](docs/data-card.md) · [Run manifest](results/manifest.json) · [Source and contribution notes](docs/provenance.md)
